@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="FtpClient/FtpClient.csproj" />
+  <Project Path="FtpServer/FtpServer.csproj" />
+</Solution>

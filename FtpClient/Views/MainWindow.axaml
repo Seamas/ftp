@@ -1,0 +1,141 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:FtpClient.ViewModels"
+        xmlns:m="using:FtpClient.Models"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="1200" d:DesignHeight="800"
+        x:Class="FtpClient.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="FTP Client"
+        MinWidth="1000" MinHeight="600">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+    
+    <Grid RowDefinitions="Auto,Auto,*,Auto,200,Auto">
+        
+        <!-- Connection Panel -->
+        <Border Grid.Row="0" Background="#f0f0f0" Padding="10" BorderBrush="#ccc" BorderThickness="0,0,0,1">
+            
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Server:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                <TextBox Text="{Binding ServerAddress}" VerticalAlignment="Center"/>
+                
+                <TextBlock Text="Port:" VerticalAlignment="Center" Margin="10,0,5,0"/>
+                <NumericUpDown Value="{Binding ServerPort}" Minimum="1" Maximum="65535" VerticalAlignment="Center" Width="180"/>
+                
+                <TextBlock Text="Username:" VerticalAlignment="Center" Margin="10,0,5,0"/>
+                <TextBox Text="{Binding Username}" VerticalAlignment="Center"/>
+                
+                <TextBlock Text="Password:" VerticalAlignment="Center" Margin="10,0,5,0"/>
+                <TextBox Text="{Binding Password}" PasswordChar="*" VerticalAlignment="Center"/>
+                
+                <Button Content="Connect" Command="{Binding ConnectCommand}" Margin="10,0,5,0" IsVisible="{Binding !IsConnected}"/>
+                <Button Content="Disconnect" Command="{Binding DisconnectCommand}" Margin="10,0,5,0" IsVisible="{Binding IsConnected}"/>
+                
+                <TextBlock Text="Status:" VerticalAlignment="Center" Margin="20,0,5,0"/>
+                <TextBlock Text="{Binding ConnectionStatus}" VerticalAlignment="Center" FontWeight="Bold"/>
+            </StackPanel>
+            
+        </Border>
+
+        <!-- Directory Navigation -->
+        <Border Grid.Row="1" Background="#e8e8e8" Padding="5">
+            <Grid ColumnDefinitions="*,Auto,*">
+                <Grid Grid.Column="0" ColumnDefinitions="Auto,*,Auto">
+                    <Button Grid.Column="0" Content="Up" Command="{Binding NavigateLocalUpCommand}" Margin="0,0,5,0"/>
+                    <TextBox Grid.Column="1" Text="{Binding LocalDirectory}" IsReadOnly="True" VerticalAlignment="Center"/>
+                    <Button Grid.Column="2" Content="Browse..." Command="{Binding BrowseLocalDirectoryCommand}" Margin="5,0,0,0"/>
+                </Grid>
+                
+                <TextBlock Grid.Column="1" Text="Transfer" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="20,0"/>
+                
+                <Grid Grid.Column="2" ColumnDefinitions="Auto,*,Auto">
+                    <Button Grid.Column="0" Content="Up" Command="{Binding NavigateRemoteUpCommand}" Margin="0,0,5,0" IsEnabled="{Binding IsConnected}"/>
+                    <TextBox Grid.Column="1" Text="{Binding RemoteDirectory}" IsReadOnly="True" VerticalAlignment="Center"/>
+                    <Button Grid.Column="2" Content="Refresh" Command="{Binding RefreshRemoteDirectoryCommand}" Margin="5,0,0,0" IsEnabled="{Binding IsConnected}"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- File Lists -->
+        <Grid Grid.Row="2" ColumnDefinitions="*,Auto,*">
+            <!-- Local Files -->
+            <Border Grid.Column="0" BorderBrush="#ccc" BorderThickness="0,0,1,0">
+                <DataGrid ItemsSource="{Binding LocalItems}" 
+                          SelectedItem="{Binding SelectedLocalItem}"
+                          AutoGenerateColumns="False"
+                          GridLinesVisibility="All"
+                          IsReadOnly="True"
+                          DoubleTapped="OnLocalItemDoubleTapped">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Size" Binding="{Binding DisplaySize}" Width="100"/>
+                        <DataGridTextColumn Header="Modified" Binding="{Binding ModifiedTime, StringFormat=yyyy-MM-dd HH:mm}" Width="150"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+
+            <!-- Transfer Buttons -->
+            <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="10">
+                <Button Content="Upload &gt;" Command="{Binding UploadCommand}" IsEnabled="{Binding IsConnected}" Margin="0,5" Width="100"/>
+                <Button Content="&lt; Download" Command="{Binding DownloadCommand}" IsEnabled="{Binding IsConnected}" Margin="0,5" Width="100"/>
+            </StackPanel>
+
+            <!-- Remote Files -->
+            <Border Grid.Column="2" BorderBrush="#ccc" BorderThickness="1,0,0,0">
+                <DataGrid ItemsSource="{Binding RemoteItems}" 
+                          SelectedItem="{Binding SelectedRemoteItem}"
+                          AutoGenerateColumns="False"
+                          GridLinesVisibility="All"
+                          IsReadOnly="True"
+                          DoubleTapped="OnRemoteItemDoubleTapped">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*"/>
+                        <DataGridTextColumn Header="Size" Binding="{Binding DisplaySize}" Width="100"/>
+                        <DataGridTextColumn Header="Modified" Binding="{Binding ModifiedTime, StringFormat=yyyy-MM-dd HH:mm}" Width="150"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Border>
+        </Grid>
+
+        <!-- Action Buttons -->
+        <Border Grid.Row="3" Background="#e8e8e8" Padding="5">
+            <Grid ColumnDefinitions="*,Auto,*">
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Button Content="Delete Local" Command="{Binding DeleteLocalCommand}" Margin="5,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" HorizontalAlignment="Right">
+                    <Button Content="Delete Remote" Command="{Binding DeleteRemoteCommand}" Margin="5,0" IsEnabled="{Binding IsConnected}"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- Transfer Progress -->
+        <Border Grid.Row="4" BorderBrush="#ccc" BorderThickness="0,1">
+            <Grid RowDefinitions="Auto,*">
+                <TextBlock Grid.Row="0" Text="Transfer Progress" FontWeight="Bold" Margin="10,5"/>
+                <DataGrid Grid.Row="1" ItemsSource="{Binding Transfers}" 
+                          SelectedItem="{Binding SelectedTransfer}"
+                          AutoGenerateColumns="False"
+                          GridLinesVisibility="All"
+                          IsReadOnly="True">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="File" Binding="{Binding FileName}" Width="300"/>
+                        <DataGridTextColumn Header="Direction" Binding="{Binding Direction}" Width="80"/>
+                        <DataGridTextColumn Header="Progress" Binding="{Binding DisplayProgress}" Width="200"/>
+                        <DataGridTextColumn Header="Status" Binding="{Binding Status}" Width="100"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+        </Border>
+
+        <!-- Status Bar -->
+        <Border Grid.Row="5" Background="#333" Padding="10,5">
+            <TextBlock Text="{Binding StatusMessage}" Foreground="White"/>
+        </Border>
+    </Grid>
+</Window>

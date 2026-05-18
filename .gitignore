@@ -1,0 +1,30 @@
+# 前端项目目录
+node_modules/
+dist/
+
+# IDE目录
+.vs/
+.vscode/
+.idea/
+
+# java 项目编译目录
+target/
+build/
+*.class
+
+# dotnet项目编译目录
+bin/
+obj/
+*.user
+
+# python 项目
+__pycache__/
+myenv/
+
+# 其他文件
+.env
+*.log
+
+# 系统文件
+.DS_Store
+Thumbs.db
