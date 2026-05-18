@@ -1,22 +1,9 @@
 using System;
 using CommunityToolkit.Mvvm.ComponentModel;
+using FtpClient.Enums;
 
 namespace FtpClient.Models;
 
-public enum TransferStatus
-{
-    Pending,
-    InProgress,
-    Completed,
-    Failed,
-    Cancelled
-}
-
-public enum TransferDirection
-{
-    Upload,
-    Download
-}
 
 public partial class TransferProgress : ObservableObject
 {

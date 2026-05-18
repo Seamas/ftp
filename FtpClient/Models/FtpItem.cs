@@ -1,12 +1,7 @@
 using System;
+using FtpClient.Enums;
 
 namespace FtpClient.Models;
-
-public enum FtpItemType
-{
-    File,
-    Directory
-}
 
 public class FtpItem
 {
